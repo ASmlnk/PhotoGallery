@@ -37,14 +37,12 @@ class PhotoGalleryFragment : Fragment() {
                 Log.e(TAG, "Response received: ${response.body()} ")
                 //выполняется когда от сервера приходит результат
                 //response.body() возвращает данные тип которых указан в качестве типа Callback
-
             }
 
             override fun onFailure(call: Call<String>, t: Throwable) {
                 Log.e(TAG, "Failed to fetch photos", t)
                 //функция будет выполняться если срвер ничего не вернет
             }
-
         })
     }
 
@@ -67,5 +65,4 @@ class PhotoGalleryFragment : Fragment() {
     companion object {
         fun newInstance() = PhotoGalleryFragment()
     }
-
 }
