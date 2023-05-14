@@ -25,8 +25,10 @@ class FlickrFetchr {
     }
 
     fun fetchContents(): LiveData<String> {
+
         val responseLiveData: MutableLiveData<String> = MutableLiveData()
         val flickrRequest: Call<String> = flickrApi.fetchContents()
+
         flickrRequest.enqueue(object : Callback<String> {
             override fun onResponse(call: Call<String>, response: Response<String>) {
                 Log.d(TAG, "Response received")
@@ -39,5 +41,4 @@ class FlickrFetchr {
         })
         return responseLiveData
     }
-
 }
