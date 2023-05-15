@@ -44,8 +44,8 @@ class FlickrFetchr {
                 val photoResponse: PhotoResponse? = flickrResponse?.photos
                 var galleryItems: List<GalleryItem> = photoResponse?.galleryItems
                     ?: mutableListOf()
-                galleryItems = galleryItems.filterNot {
-                    it.url.isBlank()
+                galleryItems = galleryItems.filterNot {       // filterNot   исключить по условию т.е. исключаем строки где url содержит пробелы
+                    it.url.isBlank()  // isBlank() возвращает true для строки, содержащей только пробелы
                 }
                 responseLiveData.value = galleryItems
             }
