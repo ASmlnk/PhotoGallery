@@ -25,15 +25,11 @@ class FlickrFetchr {
 
         val gSon = GsonBuilder().registerTypeAdapter(PhotoResponse::class.java, PhotoDeserializer()).create()
 
-
-
-
         val retrofit: Retrofit = Retrofit.Builder()
             .baseUrl("https://api.flickr.com/")
             .addConverterFactory(GsonConverterFactory.create(gSon)) //меняем конвертер
             .build()
         flickrApi = retrofit.create(FlickrApi::class.java)
-
     }
 
     fun fetchPhotos(): LiveData<List<GalleryItem>> {
@@ -72,9 +68,6 @@ class FlickrFetchr {
         return responseLiveData
     }
 }
-
-
-
 
 
 /* класс для работы со скаларс конвертером
