@@ -1,19 +1,39 @@
 package combignerdranch.android.photogallery
 
-import com.google.gson.JsonDeserializationContext
-import com.google.gson.JsonDeserializer
-import com.google.gson.JsonElement
+import android.util.Log
+import com.google.gson.*
 import combignerdranch.android.photogallery.api.PhotoResponse
 import java.lang.reflect.Type
 
-class PhotoDeserializer: JsonDeserializer<PhotoResponse> {
+private const val TAG = "PhotoDeserializer"
+
+class PhotoDeserializer : JsonDeserializer<PhotoResponse> {
     override fun deserialize(
-        json: JsonElement?,
+        json: JsonElement,
         typeOfT: Type?,
         context: JsonDeserializationContext?
     ): PhotoResponse? {
-        val ob = json?.asJsonObject?.get("photo")
-        val x = context?.deserialize<PhotoResponse>(ob, PhotoResponse::class.java)
-        return x
+
+        val jsonObject = json as JsonObject
+        val jsonList = jsonObject.get("photos").asJsonObject.get("photo").asJsonArray.toList()
+
+        //val ob = obz.asJsonObject.get("photo").asJsonArray.toList()
+        //val list: List<JsonElement> = ob.asJsonArray.toList()
+        Log.d(TAG, "$jsonList")
+
+        val list: MutableList<GalleryItem> = mutableListOf()
+        for (jsonElement in jsonList) {
+            val galleryItem = context?.deserialize<GalleryItem>(jsonElement, GalleryItem::class.java)
+            list.let {
+                list.add(galleryItem!!)
+            }
+        }
+        val listGalleryItem = list.toList()
+        val photoResponse = PhotoResponse()
+        photoResponse.galleryItems = listGalleryItem
+
+        // val x = context?.deserialize<PhotoResponse>(ob, PhotoResponse::class.java)
+        return photoResponse
     }
 }
+

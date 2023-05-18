@@ -12,6 +12,6 @@ interface FlickrApi {
                 "&nojsoncallback=1" +                           //указываем убрать все круглые скобки в ответе
                 "&extras=url_s"                                 //добавить url_s адрес мини-версии изображения если он есть
     )
-    fun fetchPhotos(): Call<FlickrResponse>
+    fun fetchPhotos(): Call<PhotoResponse>
 
 }
