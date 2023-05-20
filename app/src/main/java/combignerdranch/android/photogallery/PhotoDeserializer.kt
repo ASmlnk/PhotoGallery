@@ -20,6 +20,7 @@ class PhotoDeserializer : JsonDeserializer<PhotoResponse> {
         //val ob = obz.asJsonObject.get("photo").asJsonArray.toList()
         //val list: List<JsonElement> = ob.asJsonArray.toList()
         Log.d(TAG, "$jsonList")
+        Log.d(TAG, "$jsonObject")
 
         val list: MutableList<GalleryItem> = mutableListOf()
         for (jsonElement in jsonList) {

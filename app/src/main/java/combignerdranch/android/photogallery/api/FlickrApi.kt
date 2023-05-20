@@ -11,6 +11,7 @@ interface FlickrApi {
                 "&format=json" +                                //по умолчанию формат xml, мы указываем json
                 "&nojsoncallback=1" +                           //указываем убрать все круглые скобки в ответе
                 "&extras=url_s"                                 //добавить url_s адрес мини-версии изображения если он есть
+               // "&pages = 2"
     )
     fun fetchPhotos(): Call<PhotoResponse>
 
