@@ -1,7 +1,9 @@
 package combignerdranch.android.photogallery.api
 
+import androidx.annotation.IntRange
 import retrofit2.Call
 import retrofit2.http.GET
+import retrofit2.http.Query
 
 interface FlickrApi {
 
@@ -13,6 +15,7 @@ interface FlickrApi {
                 "&extras=url_s"                                 //добавить url_s адрес мини-версии изображения если он есть
                // "&pages = 2"
     )
-    fun fetchPhotos(): Call<PhotoResponse>
+    fun fetchPhotos(@Query("page")@IntRange(from = 3) page :Int = 3): Call<PhotoResponse>
+
 
 }
