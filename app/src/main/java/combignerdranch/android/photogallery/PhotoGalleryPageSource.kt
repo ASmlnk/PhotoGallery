@@ -35,8 +35,6 @@ class PhotoGalleryPageSource(
         Log.d(TAG, "Response received ${flickrRequest}")
         return try {
 
-
-
             val flickrResponse: FlickrResponse? = flickrRequest.body()
             Log.d(TAG, "Response received ${flickrResponse}")
                     val photoResponse: PhotoResponse? = flickrResponse?.photos
@@ -47,10 +45,6 @@ class PhotoGalleryPageSource(
                     }
                     galleryItems
                     Log.d(TAG, "Response received ${galleryItems}")
-
-
-
-
 
                 //Log.d(TAG, "Response received ${responseList}")
                  LoadResult.Page(

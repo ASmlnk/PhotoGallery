@@ -11,11 +11,11 @@ import java.security.Provider
 
 class PhotoGalleryViewModel (private val photoGalleryPageRepository: PhotoGalleryPageRepository): ViewModel() {
 
-    val galleryItemLiveData: LiveData<List<GalleryItem>>
+   // val galleryItemLiveData: LiveData<List<GalleryItem>>
     // val galleryItemPageLiveData: LiveData<PagingData<GalleryItem>>
 
     init {
-         galleryItemLiveData = FlickrFetchr().fetchPhotos(1)
+       //  galleryItemLiveData = FlickrFetchr().fetchPhotos(1)
         //galleryItemLiveData = FlickrFetchrDeserializer().fetchPhotos()
         /*запускает занрос при создании виевмодель*/
         //galleryItemPageLiveData = photoGalleryPageRepository.getAllGalleryItems()
