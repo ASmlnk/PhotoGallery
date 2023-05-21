@@ -10,8 +10,10 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.launch
 
 
 private const val TAG = "PhotoGalleryFragment"
@@ -19,8 +21,12 @@ private const val TAG = "PhotoGalleryFragment"
 class PhotoGalleryFragment : Fragment() {
 
     private lateinit var photoRecyclerView: RecyclerView
+    private val adapter = PhotoGalleryPagerAdapter()
+    private val flickrFetchr = FlickrFetchr()
+    private val photoGalleryPageRepository = PhotoGalleryPageRepository(flickrFetchr)
+
     private val photoGalleryViewModel: PhotoGalleryViewModel by lazy {
-        ViewModelProvider(this)[PhotoGalleryViewModel::class.java]
+        ViewModelProvider(this, ViewModelFactory(photoGalleryPageRepository))[PhotoGalleryViewModel::class.java]
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,13 +58,17 @@ class PhotoGalleryFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        photoGalleryViewModel.galleryItemLiveData.observe(
+        lifecycleScope.launch {  photoGalleryViewModel.getMovieList().observe(
             viewLifecycleOwner,
             Observer { galleryItems ->
-               // Log.d(TAG, "Have gallery items from ViewModel $galleryItems")
-                photoRecyclerView.adapter = PhotoAdapter(galleryItems)
+                Log.d(TAG, "Have gallery items from ViewModel $galleryItems")
+                photoRecyclerView.adapter = adapter
+                galleryItems?.let {
+                    adapter.submitData(lifecycle, it)
+                }
             }
         )
+        }
     }
 
     private class PhotoHolder(itemTextView: TextView): RecyclerView.ViewHolder(itemTextView) {
