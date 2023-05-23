@@ -37,7 +37,7 @@ interface FlickrApi {
                 "&nojsoncallback=1" +                           //указываем убрать все круглые скобки в ответе
                 "&extras=url_s"                                 //добавить url_s адрес мини-версии изображения если он есть
     )
-     suspend fun fetchPhotosPage(
-        @Query("page") @IntRange(from = 1) page :Int = 1
+    suspend fun fetchPhotosPage(
+        @Query("page")  page :Int
     ): Response<FlickrResponse>
 }

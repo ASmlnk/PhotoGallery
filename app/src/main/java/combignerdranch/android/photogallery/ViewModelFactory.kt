@@ -1,5 +1,6 @@
 package combignerdranch.android.photogallery
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 

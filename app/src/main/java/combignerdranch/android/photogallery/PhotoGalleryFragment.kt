@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
@@ -21,9 +22,13 @@ private const val TAG = "PhotoGalleryFragment"
 class PhotoGalleryFragment : Fragment() {
 
     private lateinit var photoRecyclerView: RecyclerView
-    private val adapter = PhotoGalleryPagerAdapter()
+    private lateinit var photoRecyclerObserver: ViewTreeObserver
+
+
     private val flickrFetchr = FlickrFetchr()
     private val photoGalleryPageRepository = PhotoGalleryPageRepository(flickrFetchr)
+  // private lateinit var flickrFetchr : FlickrFetchr
+   // private lateinit var photoGalleryPageRepository : PhotoGalleryPageRepository
 
     private val photoGalleryViewModel: PhotoGalleryViewModel by lazy {
         ViewModelProvider(this, ViewModelFactory(photoGalleryPageRepository))[PhotoGalleryViewModel::class.java]
@@ -50,26 +55,50 @@ class PhotoGalleryFragment : Fragment() {
         )
 
         photoRecyclerView = view.findViewById(R.id.photo_recycler_view)
-        photoRecyclerView.layoutManager = GridLayoutManager(context, 3)
+
+
+
+
 
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+         val adapter = PhotoGalleryPagerAdapter()
+        photoRecyclerView.adapter = adapter
 
         lifecycleScope.launch {  photoGalleryViewModel.getMovieList().observe(
             viewLifecycleOwner,
             Observer { galleryItems ->
-                Log.d(TAG, "Have gallery items from ViewModel $galleryItems")
-                photoRecyclerView.adapter = adapter
+                Log.d("My", "Have gallery items from ViewModel $galleryItems")
+
                 galleryItems?.let {
                     adapter.submitData(lifecycle, it)
+                    Log.d("My", "Have gallery items from ViewModel $it")
                 }
             }
         )
         }
+
+        val photoRecyclerObserver = photoRecyclerView.viewTreeObserver
+        photoRecyclerObserver.addOnGlobalLayoutListener (object : ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+
+                photoRecyclerView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+
+               val width = photoRecyclerView.width
+                val height = photoRecyclerView.measuredHeight
+                //updateSize(width, height)
+                Log.d("My", "width = $width heidht = $height")
+                val spanCount: Int = width/360
+                photoRecyclerView.layoutManager = GridLayoutManager(context, spanCount)
+            }
+        })
+
     }
+
+
 
     private class PhotoHolder(itemTextView: TextView): RecyclerView.ViewHolder(itemTextView) {
 

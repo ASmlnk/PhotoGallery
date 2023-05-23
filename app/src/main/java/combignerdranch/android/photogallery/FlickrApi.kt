@@ -30,8 +30,9 @@ class FlickrFetchr {
 
     }
 
-    fun getFlickrApi(): FlickrApi {
+   fun getFlickrApi(): FlickrApi {
 
+        Log.d("MY", "Repository flickr")
         return flickrApi
     }
 

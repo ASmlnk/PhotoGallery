@@ -17,46 +17,49 @@ private const val TAG = "MY1"
 
 class PhotoGalleryPageSource(
     private val flickrFetchr: FlickrFetchr
-): PagingSource<Int, GalleryItem>() {
+) : PagingSource<Int, GalleryItem>() {
 
     override fun getRefreshKey(state: PagingState<Int, GalleryItem>): Int? {
-        val anchorPosition = state.anchorPosition ?: return null
-        val page = state.closestPageToPosition(anchorPosition) ?: return null
-        return page.prevKey?.plus(1) ?: page.nextKey?.minus(1)
+        return state.anchorPosition?.let { anchorPosition ->
+            state.closestPageToPosition(anchorPosition)?.prevKey?.plus(1)
+                ?: state.closestPageToPosition(anchorPosition)?.nextKey?.minus(1)
+        }
     }
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, GalleryItem> {
 
-            val pageIndex: Int = params.key ?: 0
-        Log.d(TAG, "Response received ${pageIndex}")
-        val flickrApi = flickrFetchr.getFlickrApi()
-        val flickrRequest = flickrApi.fetchPhotosPage(page = pageIndex)
+        val pageIndex: Int = params.key ?: 0
+        Log.d(TAG, "Response receiv ${pageIndex}")
 
-        Log.d(TAG, "Response received ${flickrRequest}")
         return try {
+            val flickrApi = flickrFetchr.getFlickrApi()
+            val flickrRequest = flickrApi.fetchPhotosPage(page = pageIndex)
+
+            Log.d(TAG, "Response received ${flickrRequest}")
 
             val flickrResponse: FlickrResponse? = flickrRequest.body()
             Log.d(TAG, "Response received ${flickrResponse}")
-                    val photoResponse: PhotoResponse? = flickrResponse?.photos
-                    var galleryItems: List<GalleryItem> = photoResponse?.galleryItems
-                        ?: mutableListOf()
-                    galleryItems = galleryItems.filterNot {       // filterNot   исключить по условию т.е. исключаем строки где url содержит пробелы
-                        it.url.isBlank()  // isBlank() возвращает true для строки, содержащей только пробелы
-                    }
-                    galleryItems
-                    Log.d(TAG, "Response received ${galleryItems}")
+            val photoResponse: PhotoResponse? = flickrResponse?.photos
+            var galleryItems: List<GalleryItem> = photoResponse?.galleryItems
+                ?: mutableListOf()
+            galleryItems =
+                galleryItems.filterNot {       // filterNot   исключить по условию т.е. исключаем строки где url содержит пробелы
+                    it.url.isBlank()  // isBlank() возвращает true для строки, содержащей только пробелы
+                }
 
-                //Log.d(TAG, "Response received ${responseList}")
-                 LoadResult.Page(
-                    data = galleryItems,
-                    prevKey = if (pageIndex == 0) null else pageIndex - 1,
-                    nextKey = pageIndex + 1
-                )
+            Log.d(TAG, "Response received'' ${galleryItems}")
+
+            //Log.d(TAG, "Response received ${responseList}")
+            LoadResult.Page(
+                data = galleryItems,
+                prevKey = if (pageIndex == 1) null else pageIndex,
+                nextKey = pageIndex + 1
+            )
 
         } catch (e: Exception) {
-            LoadResult.Error (
+            LoadResult.Error(
                 throwable = e
-                    )
+            )
         }
     }
 }

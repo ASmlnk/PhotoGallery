@@ -1,5 +1,6 @@
 package combignerdranch.android.photogallery
 
+import android.util.Log
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.paging.PagingDataAdapter
@@ -23,6 +24,7 @@ class PhotoGalleryPagerAdapter: PagingDataAdapter<GalleryItem, PhotoGalleryPager
 
     override fun onBindViewHolder(holder: PhotoHolder, position: Int) {
         val galleryItem = getItem(position)!!
+
         holder.bindTitle(galleryItem.title)
     }
 
