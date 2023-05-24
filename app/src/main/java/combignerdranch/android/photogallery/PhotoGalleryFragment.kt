@@ -68,7 +68,7 @@ class PhotoGalleryFragment : Fragment() {
          val adapter = PhotoGalleryPagerAdapter()
         photoRecyclerView.adapter = adapter
 
-        lifecycleScope.launch {  photoGalleryViewModel.getMovieList().observe(
+        viewLifecycleOwner.lifecycleScope.launch {  photoGalleryViewModel.getMovieList().observe(
             viewLifecycleOwner,
             Observer { galleryItems ->
                 Log.d("My", "Have gallery items from ViewModel $galleryItems")

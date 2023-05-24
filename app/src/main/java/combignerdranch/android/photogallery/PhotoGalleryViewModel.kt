@@ -10,7 +10,7 @@ import java.security.Provider
 class PhotoGalleryViewModel (private val photoGalleryPageRepository: PhotoGalleryPageRepository): ViewModel() {
 
    // val galleryItemLiveData: LiveData<List<GalleryItem>>
-    // val galleryItemPageLiveData: LiveData<PagingData<GalleryItem>>
+    private val galleryItemPageLiveData = MutableLiveData<PagingData<GalleryItem>>()
 
     init {
        //  galleryItemLiveData = FlickrFetchr().fetchPhotos(1)
@@ -19,8 +19,11 @@ class PhotoGalleryViewModel (private val photoGalleryPageRepository: PhotoGaller
         //galleryItemPageLiveData = photoGalleryPageRepository.getAllGalleryItems()
     }
 
-    fun getMovieList(): LiveData<PagingData<GalleryItem>> {
-        return photoGalleryPageRepository.getAllGalleryItems().cachedIn(viewModelScope)
+   suspend fun getMovieList(): LiveData<PagingData<GalleryItem>> {
+        val responce = photoGalleryPageRepository.getAllGalleryItems().cachedIn(viewModelScope)
+       galleryItemPageLiveData.value = responce.value
+
+       return responce
     }
 
 

@@ -13,9 +13,9 @@ class PhotoGalleryPageRepository (private val flickrFetchr: FlickrFetchr) {
 
         return Pager(
             config = PagingConfig(
-                pageSize = 10,
-                        enablePlaceholders = false,
-                initialLoadSize = 2
+                pageSize = 50,
+                        enablePlaceholders = false
+
             ),
             pagingSourceFactory = {
                 PhotoGalleryPageSource(flickrFetchr)
