@@ -30,18 +30,28 @@ class FlickrFetchr {
 
     }
 
-   fun getFlickrApi(): FlickrApi {
+    suspend fun getFlickrApi(page: Int): List<GalleryItem> {
 
-        Log.d("MY", "Repository flickr")
-        return flickrApi
+        val flickrRequest = flickrApi.fetchPhotosPage(page)
+        val flickrResponse: FlickrResponse? = flickrRequest.body()
+        val photoResponse: PhotoResponse? = flickrResponse?.photos
+        var galleryItems: List<GalleryItem> = photoResponse?.galleryItems
+            ?: mutableListOf()
+
+        galleryItems =
+            galleryItems.filterNot {       // filterNot   исключить по условию т.е. исключаем строки где url содержит пробелы
+                it.url.isBlank()  // isBlank() возвращает true для строки, содержащей только пробелы
+            }
+        return galleryItems
     }
 
-    fun fetchPhotos( page: Int ): LiveData<List<GalleryItem>> {
+    fun fetchPhotos(page: Int): LiveData<List<GalleryItem>> {
 
         val responseLiveData: MutableLiveData<List<GalleryItem>> = MutableLiveData()
         val flickrRequest: Call<FlickrResponse> = flickrApi.fetchPhotos(page = 1)
 
-        flickrRequest.enqueue(object : Callback<FlickrResponse> {                    //FlickrResponse
+        flickrRequest.enqueue(object :
+            Callback<FlickrResponse> {                    //FlickrResponse
 
             override fun onResponse(
                 call: Call<FlickrResponse>,
@@ -49,31 +59,30 @@ class FlickrFetchr {
             ) {
 
                 val flickrResponse: FlickrResponse? = response.body()
-                Log.d(TAG, "Response received ${flickrResponse}")
                 val photoResponse: PhotoResponse? = flickrResponse?.photos
                 var galleryItems: List<GalleryItem> = photoResponse?.galleryItems
                     ?: mutableListOf()
-                galleryItems = galleryItems.filterNot {       // filterNot   исключить по условию т.е. исключаем строки где url содержит пробелы
-                    it.url.isBlank()  // isBlank() возвращает true для строки, содержащей только пробелы
-                }
+                galleryItems =
+                    galleryItems.filterNot {       // filterNot   исключить по условию т.е. исключаем строки где url содержит пробелы
+                        it.url.isBlank()  // isBlank() возвращает true для строки, содержащей только пробелы
+                    }
                 responseLiveData.value = galleryItems
             }
 
             override fun onFailure(call: Call<FlickrResponse>, t: Throwable) {
-                Log.e(TAG, "Failed to fetch photos", t)
             }
         })
         return responseLiveData
     }
 
-    fun fetchPhotosPage ( page: Int ): LiveData<List<GalleryItem>> {
-        Log.d(TAG, "Response received ${page}")
+    fun fetchPhotosPage(page: Int): LiveData<List<GalleryItem>> {
 
         val responseLiveData: MutableLiveData<List<GalleryItem>> = MutableLiveData()
         val responseList: MutableList<GalleryItem> = mutableListOf()
         val flickrRequest: Call<FlickrResponse> = flickrApi.fetchPhotos(page = page)
 
-        flickrRequest.enqueue(object : Callback<FlickrResponse> {                    //FlickrResponse
+        flickrRequest.enqueue(object :
+            Callback<FlickrResponse> {                    //FlickrResponse
 
             override fun onResponse(
                 call: Call<FlickrResponse>,
@@ -81,16 +90,16 @@ class FlickrFetchr {
             ) {
 
                 val flickrResponse: FlickrResponse? = response.body()
-                Log.d(TAG, "Response received ${flickrResponse}")
                 val photoResponse: PhotoResponse? = flickrResponse?.photos
                 var galleryItems: List<GalleryItem> = photoResponse?.galleryItems
                     ?: mutableListOf()
-                galleryItems = galleryItems.filterNot {       // filterNot   исключить по условию т.е. исключаем строки где url содержит пробелы
-                    it.url.isBlank()  // isBlank() возвращает true для строки, содержащей только пробелы
-                }
+                galleryItems =
+                    galleryItems.filterNot {       // filterNot   исключить по условию т.е. исключаем строки где url содержит пробелы
+                        it.url.isBlank()  // isBlank() возвращает true для строки, содержащей только пробелы
+                    }
 
                 responseLiveData.value = galleryItems
-               // responseList.addAll(galleryItems)
+                // responseList.addAll(galleryItems)
             }
 
             override fun onFailure(call: Call<FlickrResponse>, t: Throwable) {
@@ -108,7 +117,8 @@ class FlickrFetchrDeserializer {
 
     init {
 
-        val gSon = GsonBuilder().registerTypeAdapter(PhotoResponse::class.java, PhotoDeserializer()).create()  //+
+        val gSon = GsonBuilder().registerTypeAdapter(PhotoResponse::class.java, PhotoDeserializer())
+            .create()  //+
 
         val retrofit: Retrofit = Retrofit.Builder()
             .baseUrl("https://api.flickr.com/")
@@ -122,19 +132,21 @@ class FlickrFetchrDeserializer {
         val responseLiveData: MutableLiveData<List<GalleryItem>> = MutableLiveData()
         val flickrRequest: Call<PhotoResponse> = flickrApi.fetchPhotosDeserializer()          //+
 
-        flickrRequest.enqueue(object : Callback<PhotoResponse> {                    //FlickrResponse  //+
+        flickrRequest.enqueue(object :
+            Callback<PhotoResponse> {                    //FlickrResponse  //+
 
             override fun onResponse(
                 call: Call<PhotoResponse>,
                 response: Response<PhotoResponse>                     //+
             ) {
-                val  photoResponse: PhotoResponse? = response.body()     //+
+                val photoResponse: PhotoResponse? = response.body()     //+
                 Log.d(TAG, "Response received ${photoResponse?.galleryItems}")
                 var galleryItems: List<GalleryItem> = photoResponse?.galleryItems
                     ?: mutableListOf()
-                galleryItems = galleryItems.filterNot {       // filterNot   исключить по условию т.е. исключаем строки где url содержит пробелы
-                    it.url.isBlank()  // isBlank() возвращает true для строки, содержащей только пробелы
-                }
+                galleryItems =
+                    galleryItems.filterNot {       // filterNot   исключить по условию т.е. исключаем строки где url содержит пробелы
+                        it.url.isBlank()  // isBlank() возвращает true для строки, содержащей только пробелы
+                    }
                 responseLiveData.value = galleryItems
             }
 

@@ -22,16 +22,14 @@ private const val TAG = "PhotoGalleryFragment"
 class PhotoGalleryFragment : Fragment() {
 
     private lateinit var photoRecyclerView: RecyclerView
-    private lateinit var photoRecyclerObserver: ViewTreeObserver
-
-
     private val flickrFetchr = FlickrFetchr()
     private val photoGalleryPageRepository = PhotoGalleryPageRepository(flickrFetchr)
-  // private lateinit var flickrFetchr : FlickrFetchr
-   // private lateinit var photoGalleryPageRepository : PhotoGalleryPageRepository
 
     private val photoGalleryViewModel: PhotoGalleryViewModel by lazy {
-        ViewModelProvider(this, ViewModelFactory(photoGalleryPageRepository))[PhotoGalleryViewModel::class.java]
+        ViewModelProvider(
+            this,
+            ViewModelFactory(photoGalleryPageRepository)
+        )[PhotoGalleryViewModel::class.java]
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,52 +53,42 @@ class PhotoGalleryFragment : Fragment() {
         )
 
         photoRecyclerView = view.findViewById(R.id.photo_recycler_view)
-
-
-
-
-
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-         val adapter = PhotoGalleryPagerAdapter()
+        val adapter = PhotoGalleryPagerAdapter()
         photoRecyclerView.adapter = adapter
 
-        viewLifecycleOwner.lifecycleScope.launch {  photoGalleryViewModel.getMovieList().observe(
-            viewLifecycleOwner,
-            Observer { galleryItems ->
-                Log.d("My", "Have gallery items from ViewModel $galleryItems")
-
-                galleryItems?.let {
-                    adapter.submitData(lifecycle, it)
-                    Log.d("My", "Have gallery items from ViewModel $it")
+        viewLifecycleOwner.lifecycleScope.launch {
+            photoGalleryViewModel.getMovieList()
+                .observe(viewLifecycleOwner) { pagingData ->
+                    pagingData?.let {
+                        adapter.submitData(lifecycle, it)
+                    }
                 }
-            }
-        )
         }
 
         val photoRecyclerObserver = photoRecyclerView.viewTreeObserver
-        photoRecyclerObserver.addOnGlobalLayoutListener (object : ViewTreeObserver.OnGlobalLayoutListener {
-            override fun onGlobalLayout() {
 
-                photoRecyclerView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+        photoRecyclerObserver
+            .addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
 
-               val width = photoRecyclerView.width
-                val height = photoRecyclerView.measuredHeight
-                //updateSize(width, height)
-                Log.d("My", "width = $width heidht = $height")
-                val spanCount: Int = width/360
-                photoRecyclerView.layoutManager = GridLayoutManager(context, spanCount)
-            }
-        })
+                    photoRecyclerView.viewTreeObserver.removeOnGlobalLayoutListener(this)
 
+                    val width = photoRecyclerView.width
+                    val height = photoRecyclerView.measuredHeight
+                    //updateSize(width, height)
+                    val spanCount: Int = width / 360
+                    photoRecyclerView.layoutManager = GridLayoutManager(context, spanCount)
+                    photoRecyclerView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                }
+            })
     }
 
-
-
-    private class PhotoHolder(itemTextView: TextView): RecyclerView.ViewHolder(itemTextView) {
+    private class PhotoHolder(itemTextView: TextView) : RecyclerView.ViewHolder(itemTextView) {
 
         val bindTitle: (CharSequence) -> Unit = itemTextView::setText
     }

@@ -1,6 +1,5 @@
 package combignerdranch.android.photogallery
 
-import android.util.Log
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.paging.PagingDataAdapter
@@ -19,6 +18,7 @@ class PhotoGalleryPagerAdapter: PagingDataAdapter<GalleryItem, PhotoGalleryPager
     }
 
     class PhotoHolder(itemTextView: TextView): RecyclerView.ViewHolder(itemTextView) {
+
         val bindTitle: (CharSequence) -> Unit = itemTextView::setText
     }
 

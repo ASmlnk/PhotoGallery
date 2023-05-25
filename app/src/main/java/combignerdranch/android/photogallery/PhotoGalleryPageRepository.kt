@@ -7,21 +7,14 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.liveData
 
-class PhotoGalleryPageRepository (private val flickrFetchr: FlickrFetchr) {
+class PhotoGalleryPageRepository(private val flickrFetchr: FlickrFetchr) {
+
     fun getAllGalleryItems(): LiveData<PagingData<GalleryItem>> {
-        Log.d("MY", "Repository")
 
         return Pager(
-            config = PagingConfig(
-                pageSize = 50,
-                        enablePlaceholders = false
-
-            ),
-            pagingSourceFactory = {
-                PhotoGalleryPageSource(flickrFetchr)
-
-            }
-        , initialKey = 1
+            config = PagingConfig(pageSize = 5),
+            pagingSourceFactory = { PhotoGalleryPageSource(flickrFetchr) },
+            initialKey = 1
         ).liveData
     }
 }

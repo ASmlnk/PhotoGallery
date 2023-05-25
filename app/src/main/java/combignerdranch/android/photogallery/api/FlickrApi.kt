@@ -16,7 +16,7 @@ interface FlickrApi {
                 "&extras=url_s"                                 //добавить url_s адрес мини-версии изображения если он есть
     )
     fun fetchPhotos(
-        @Query("page") @IntRange(from = 1) page :Int = 1
+        @Query("page") @IntRange(from = 1) page: Int = 1
     ): Call<FlickrResponse>
 
     @GET(
@@ -27,7 +27,7 @@ interface FlickrApi {
                 "&extras=url_s"                                 //добавить url_s адрес мини-версии изображения если он есть
     )
     fun fetchPhotosDeserializer(
-        @Query("page")@IntRange(from = 1) page :Int = 1
+        @Query("page") @IntRange(from = 1) page: Int = 1
     ): Call<PhotoResponse>
 
     @GET(
@@ -38,6 +38,6 @@ interface FlickrApi {
                 "&extras=url_s"                                 //добавить url_s адрес мини-версии изображения если он есть
     )
     suspend fun fetchPhotosPage(
-        @Query("page")  page :Int
+        @Query("page") page: Int
     ): Response<FlickrResponse>
 }
