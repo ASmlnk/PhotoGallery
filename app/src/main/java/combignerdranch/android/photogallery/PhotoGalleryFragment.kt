@@ -1,8 +1,10 @@
 package combignerdranch.android.photogallery
 
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -42,7 +44,14 @@ class PhotoGalleryFragment : Fragment() {
 
         retainInstance = true //сохранение фрагмента
 
-        thumbnailDownloader = ThumbnailDownloader()
+        val responseHandler = Handler() //Handler основного потока
+        thumbnailDownloader = ThumbnailDownloader(responseHandler) {photoHolder, bitmap ->
+            val drawable = BitmapDrawable(resources, bitmap)
+            photoHolder.bindDrawable(drawable)
+            /*функция, переданная в функцию высшего порядка onThumbnailDownloaded ,
+            устанавливает Drawable запрошенного PhotoHolder на только что загруженный Bitmap*/
+        }
+
         lifecycle.addObserver(thumbnailDownloader)
 
 /*        val flickrLiveData: LiveData<List<GalleryItem>> = FlickrFetchr().fetchPhotos()
