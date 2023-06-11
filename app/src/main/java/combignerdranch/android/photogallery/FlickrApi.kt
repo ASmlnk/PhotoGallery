@@ -1,12 +1,16 @@
 package combignerdranch.android.photogallery
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.util.Log
+import androidx.annotation.WorkerThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.gson.GsonBuilder
 import combignerdranch.android.photogallery.api.FlickrApi
 import combignerdranch.android.photogallery.api.FlickrResponse
 import combignerdranch.android.photogallery.api.PhotoResponse
+import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -107,6 +111,20 @@ class FlickrFetchr {
             }
         })
         return responseLiveData
+    }
+
+    @WorkerThread  //указывает что функция выполняется в фоноыом потоке
+    fun fetchPhoto(url: String): Bitmap? {
+        val response: Response<ResponseBody> = flickrApi.fetchUrlBytes(url).execute()
+        val bitmap = response.body()?.byteStream()?.use(BitmapFactory::decodeStream)
+        /*Объект java.io.InputStream извлекается из тела ответа с помощью функции
+          ResponseBody.byteStream(). Получив поток байтов, мы передаем его функции
+          BitmapFactory.decodeStream(InputStream), которая создаст Bitmap из данных в потоке
+          Ответный и байтовый потоки должны быть закрытыми. Так как InputStream реализует атрибут Closeable, то стандартная функция библиотеки Kotlin use(...)
+          выполнит чистку при возвращении BitmapFactory.decodeStream(...)*/
+
+        Log.i(TAG, "Decoded bitmap=$bitmap from Response=$response")
+        return bitmap
     }
 }
 
