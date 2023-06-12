@@ -52,7 +52,8 @@ class PhotoGalleryFragment : Fragment() {
             устанавливает Drawable запрошенного PhotoHolder на только что загруженный Bitmap*/
         }
 
-        lifecycle.addObserver(thumbnailDownloader)
+        /*наблюдение за жизненым циклом фрагмента*/
+        lifecycle.addObserver(thumbnailDownloader.fragmentLifecycleObserver)
 
 /*        val flickrLiveData: LiveData<List<GalleryItem>> = FlickrFetchr().fetchPhotos()
         flickrLiveData.observe(this) { galleryItems ->
@@ -65,6 +66,11 @@ class PhotoGalleryFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+
+        /*наблюдение за жизненым циклом представления*/
+        viewLifecycleOwner.lifecycle.addObserver(
+            thumbnailDownloader.viewLifecycleObserver
+        )
         val view = inflater.inflate(
             R.layout.fragment_photo_gallery,
             container,
@@ -107,9 +113,19 @@ class PhotoGalleryFragment : Fragment() {
             })
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+
+        /*наблюдение за жизненым циклом представления*/
+        viewLifecycleOwner.lifecycle.removeObserver(
+            thumbnailDownloader.viewLifecycleObserver
+        )
+    }
+
     override fun onDestroy() {
         super.onDestroy()
-        lifecycle.removeObserver(thumbnailDownloader)
+        /*наблюдение за жизненым циклом фрагмента*/
+        lifecycle.removeObserver(thumbnailDownloader.fragmentLifecycleObserver)
     }
 
     /*Вызов lifecycle.addObserver(thumbnailDownloader) подписывает экземпляр загрузчика

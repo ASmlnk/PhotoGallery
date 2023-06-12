@@ -20,7 +20,7 @@ class ThumbnailDownloader<in T>(
     private val responseHandler: Handler,  //Handler основного потока
     private val onThumbnailDownloader: (T, Bitmap) -> Unit  // интерфейс слушателя для передачи ответов (загруженных изображений)
                                                             // запрашивающей стороне (главному потоку)
-) : HandlerThread(TAG), LifecycleObserver {
+) : HandlerThread(TAG) /*LifecycleObserver 1вариант наблюдателя за жизненым циклом фрагмента*/ {
 
     /*Свойство типа функции в конструкторе, будет рано или поздно использовано, когда полностью
     загруженное изображение появится в интерфейсе. Использование слушателя передает ответственность за обработку
@@ -95,6 +95,38 @@ class ThumbnailDownloader<in T>(
         return super.quit()
     }
 
+    //2 вариант наблюдателя за жизненым циклом фрагмента
+    val fragmentLifecycleObserver: LifecycleObserver =
+        object : LifecycleObserver {
+            @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
+            fun setup() {
+                Log.i(TAG, "Starting background thread")
+
+                start()  //запуск при вызове функции PhotoGalleryFragment.onCreate(...)
+                looper   //доступ к looper после вызова функции start() на ThumbnailDownloader
+            }
+
+            @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+            fun tearDown() {
+                Log.i(TAG, "Destroying background thread")
+                quit()  //остановка при вызове функции PhotoGalleryFragment.onDestroy()
+            }
+        }
+
+    //наблюдатель за жизненым циклом представления
+    val viewLifecycleObserver: LifecycleObserver =
+        object : LifecycleObserver {
+            @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+            fun clearQueue() {
+                Log.i(TAG, "Clearing all requests from queue")
+                requestHandler.removeMessages(MESSAGE_DOWNLOAD)
+                requestMap.clear()
+            }
+        }
+
+
+    /*
+    1вариант наблюдателя за жизненым циклом фрагмента
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
     fun setup() {
         Log.i(TAG, "Starting background thread")
@@ -102,20 +134,20 @@ class ThumbnailDownloader<in T>(
         start()  //запуск при вызове функции PhotoGalleryFragment.onCreate(...)
         looper   //доступ к looper после вызова функции start() на ThumbnailDownloader
     }
-    /* аннотация @OnLifecycleEvent(Lifecycle.Event), позволяющая ассоциировать
+    *//* аннотация @OnLifecycleEvent(Lifecycle.Event), позволяющая ассоциировать
     функцию в вашем классе с обратным вызовом жизненного цикла.
     Lifecycle.Event.ON_CREATE регистрирует вызов функции ThumbnailDownloader.setup()
     при вызове функции LifecycleOwner.onCreate(...).
     Lifecycle.Event.ON_DESTROY регистрирует вызов функции ThumbnailDownloader.
-    tearDown()при вызове функции LifecycleOwner.onDestroy()*/
+    tearDown()при вызове функции LifecycleOwner.onDestroy()*//*
 
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     fun tearDown() {
         Log.i(TAG, "Destroying background thread")
         quit()  //остановка при вызове функции PhotoGalleryFragment.onDestroy()
-        /* нужно вызывать функцию quit() для завершения потока. Это важно.
-        Если вы не выйдете из HandlerThreads, он будет жить вечно*/
-    }
+        *//* нужно вызывать функцию quit() для завершения потока. Это важно.
+        Если вы не выйдете из HandlerThreads, он будет жить вечно*//*
+    }*/
 
     fun queueThumbnail(target: T, url: String) {
         /*queueThumbnail() ожидает получить объект типа T, выполняющий
