@@ -55,6 +55,9 @@ class PhotoGalleryFragment : Fragment() {
         /*наблюдение за жизненым циклом фрагмента*/
         lifecycle.addObserver(thumbnailDownloader.fragmentLifecycleObserver)
 
+        /*наблюдение за жизненым циклом представления 2 вариант*/
+        viewLifecycleOwnerLiveData.isInitialized
+
 /*        val flickrLiveData: LiveData<List<GalleryItem>> = FlickrFetchr().fetchPhotos()
         flickrLiveData.observe(this) { galleryItems ->
             Log.d(TAG, "Response received: $galleryItems ")
@@ -67,10 +70,11 @@ class PhotoGalleryFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
 
-        /*наблюдение за жизненым циклом представления*/
-        viewLifecycleOwner.lifecycle.addObserver(
+        /*наблюдение за жизненым циклом представления 1 вариант*/
+        /*viewLifecycleOwner.lifecycle.addObserver(
             thumbnailDownloader.viewLifecycleObserver
-        )
+        )*/
+
         val view = inflater.inflate(
             R.layout.fragment_photo_gallery,
             container,
@@ -85,6 +89,11 @@ class PhotoGalleryFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val adapter = PhotoGalleryPagerAdapter(thumbnailDownloader)
         photoRecyclerView.adapter = adapter
+
+        /*наблюдение за жизненым циклом представления 2 вариант*/
+        viewLifecycleOwnerLiveData.value?.lifecycle?.addObserver(
+            thumbnailDownloader.viewLifecycleObserver
+        )
 
         viewLifecycleOwner.lifecycleScope.launch {
             photoGalleryViewModel.getMovieList()
