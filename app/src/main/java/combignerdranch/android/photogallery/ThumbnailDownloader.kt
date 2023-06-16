@@ -47,6 +47,8 @@ class ThumbnailDownloader<in T>(
     private val flickrFetchr = FlickrFetchr()  //
 
     private val maxMemory = (Runtime.getRuntime().maxMemory() / 1024).toInt()
+    private val cacheSize = maxMemory/8
+    private val bitmapCache = LruCache<String, Bitmap>(cacheSize)
 
 
     @Suppress("UNCHECKED_CAST")
@@ -71,12 +73,9 @@ class ThumbnailDownloader<in T>(
 
     private fun handleRequest(target: T) {
         val url = requestMap[target] ?: return
-        val bitmap = flickrFetchr.fetchPhoto(url) ?: return
-        val cacheSize = maxMemory/8
-        val bitmapCache = LruCache<String, Bitmap>(cacheSize)
 
-
-
+      //  val bitmap = flickrFetchr.fetchPhoto(url) ?: return
+        val bitmap: Bitmap = bitmap(url) ?: return
 
         /*Мы проверяем существование URL-адреса, после чего передаем его новому экземпляру FlickrFetchr.
         * При этом используется функция FlickrFetchr.getUrlBytes(...) */
@@ -169,4 +168,20 @@ class ThumbnailDownloader<in T>(
         requestHandler.obtainMessage(MESSAGE_DOWNLOAD, target)
             .sendToTarget()
     }
+
+    fun bitmap(url: String):Bitmap? {
+        var bit = bitmapCache.get(url)
+
+        if (bit == null) {
+            bit = flickrFetchr.fetchPhoto(url)
+            try {
+                    bitmapCache.put(url, bit!!)
+            } catch(e: Exception) {
+                bit = null
+            }
+        }
+        return bit
+    }
+
+
 }
