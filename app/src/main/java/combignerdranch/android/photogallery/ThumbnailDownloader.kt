@@ -6,6 +6,7 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.Message
 import android.util.Log
+import androidx.collection.LruCache
 import androidx.lifecycle.*
 import java.util.concurrent.ConcurrentHashMap
 
@@ -45,6 +46,9 @@ class ThumbnailDownloader<in T>(
 
     private val flickrFetchr = FlickrFetchr()  //
 
+    private val maxMemory = (Runtime.getRuntime().maxMemory() / 1024).toInt()
+
+
     @Suppress("UNCHECKED_CAST")
 
     /*Проблемы тут получаются только в том случае, если обработчик прикреплен к объекту Looper основного потока.
@@ -67,8 +71,13 @@ class ThumbnailDownloader<in T>(
 
     private fun handleRequest(target: T) {
         val url = requestMap[target] ?: return
-
         val bitmap = flickrFetchr.fetchPhoto(url) ?: return
+        val cacheSize = maxMemory/8
+        val bitmapCache = LruCache<String, Bitmap>(cacheSize)
+
+
+
+
         /*Мы проверяем существование URL-адреса, после чего передаем его новому экземпляру FlickrFetchr.
         * При этом используется функция FlickrFetchr.getUrlBytes(...) */
 
