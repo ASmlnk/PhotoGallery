@@ -6,8 +6,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.TextView
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
@@ -40,11 +38,6 @@ class PhotoGalleryPagerAdapter(val thumbnailDownloader: ThumbnailDownloader<Phot
 
     override fun onBindViewHolder(holder: PhotoHolder, position: Int) {
         val galleryItem = getItem(position)!!
-        val listGalleryItem = mutableListOf<GalleryItem>()
-        for (n in position..(position+10)) {
-            listGalleryItem.add(getItem(n)!!)
-        }
-        Log.i(TAG, "${listGalleryItem.size}")
 
         val placeholder: Drawable = ContextCompat.getDrawable(
             holder.itemView.context,
