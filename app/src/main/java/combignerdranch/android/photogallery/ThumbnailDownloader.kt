@@ -67,6 +67,7 @@ class ThumbnailDownloader<in T>(
 
     private fun handleRequest(target: T) {
         val url = requestMap[target] ?: return
+
         val bitmap = flickrFetchr.fetchPhoto(url) ?: return
         /*Мы проверяем существование URL-адреса, после чего передаем его новому экземпляру FlickrFetchr.
         * При этом используется функция FlickrFetchr.getUrlBytes(...) */
@@ -154,8 +155,7 @@ class ThumbnailDownloader<in T>(
         *функция будет вызываться PhotoAdapter в его реализации onBindViewHolder(...)*/
         Log.i(TAG, "Got a URL: $url")
 
-        requestMap[target] =
-            url    //Сообщение берется непосредственно из переменной requestHandler , в результате
+        requestMap[target] = url    //Сообщение берется непосредственно из переменной requestHandler , в результате
         //чего поле target нового объекта Message немедленно заполняется переменной requestHandler
         requestHandler.obtainMessage(MESSAGE_DOWNLOAD, target)
             .sendToTarget()

@@ -56,7 +56,8 @@ class PhotoGalleryFragment : Fragment() {
         lifecycle.addObserver(thumbnailDownloader.fragmentLifecycleObserver)
 
         /*наблюдение за жизненым циклом представления 2 вариант*/
-        viewLifecycleOwnerLiveData.isInitialized
+       // viewLifecycleOwnerLiveData.isInitialized
+
 
 /*        val flickrLiveData: LiveData<List<GalleryItem>> = FlickrFetchr().fetchPhotos()
         flickrLiveData.observe(this) { galleryItems ->
