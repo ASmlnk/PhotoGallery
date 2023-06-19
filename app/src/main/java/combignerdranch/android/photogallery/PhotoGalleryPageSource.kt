@@ -2,10 +2,10 @@ package combignerdranch.android.photogallery
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-
 import java.lang.Exception
 
 class PhotoGalleryPageSource(
+    private val searchString: String,
     private val flickrFetchr: FlickrFetchr
 ) : PagingSource<Int, GalleryItem>() {
 
@@ -25,7 +25,11 @@ class PhotoGalleryPageSource(
         val pageIndex: Int = params.key ?: 0
 
         return try {
-            val galleryItems = flickrFetchr.getFlickrApi(page = pageIndex)
+            val galleryItems = if (searchString.isBlank()) {
+                flickrFetchr.getFlickrApi(page = pageIndex)
+            } else {
+                flickrFetchr.searchPhotos( searchString, page = pageIndex)
+            }
 
             LoadResult.Page(
                 data = galleryItems,

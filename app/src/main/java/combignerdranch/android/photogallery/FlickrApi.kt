@@ -4,17 +4,13 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.annotation.WorkerThread
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import com.google.gson.GsonBuilder
 import combignerdranch.android.photogallery.api.FlickrApi
 import combignerdranch.android.photogallery.api.FlickrResponse
+import combignerdranch.android.photogallery.api.PhotoInterceptor
 import combignerdranch.android.photogallery.api.PhotoResponse
+import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.Retrofit
+import retrofit2.*
 import retrofit2.converter.gson.GsonConverterFactory
 
 private const val TAG = "MY"
@@ -25,13 +21,74 @@ class FlickrFetchr {
     private val flickrApi: FlickrApi
 
     init {
+        val client = OkHttpClient.Builder()
+            .addInterceptor(PhotoInterceptor())
+            .build()  //инициализация перехвадчика
 
+        Log.i(TAG, "$client")
+
+        val retrofit: Retrofit = Retrofit.Builder()
+            .baseUrl("https://api.flickr.com/")
+            .addConverterFactory(GsonConverterFactory.create()) //меняем конвертер
+            .client(client)  //добавление перехвадчика в ретрофит
+            .build()
+
+        flickrApi = retrofit.create(FlickrApi::class.java)
+        Log.i(TAG, "$flickrApi")
+    }
+
+    suspend fun getFlickrApi(page: Int): List<GalleryItem>{
+        return getFlickrApiRequest(flickrApi.fetchPhotosPage(page))
+    }
+
+     suspend fun searchPhotos( query: String,page: Int): List<GalleryItem> {
+         val responseFlickrResponse = flickrApi.searchPhotos(query, page).awaitResponse()
+        return getFlickrApiRequest(responseFlickrResponse)
+    }
+
+     suspend fun getFlickrApiRequest(flickrRequest: Response<FlickrResponse>): List<GalleryItem> {
+
+        //val flickrRequest = flickrApi.fetchPhotosPage(page)
+        Log.i(TAG, "flickrRequest $flickrRequest")
+        val flickrResponse: FlickrResponse? = flickrRequest.body()
+        val photoResponse: PhotoResponse? = flickrResponse?.photos
+        var galleryItems: List<GalleryItem> = photoResponse?.galleryItems
+            ?: mutableListOf()
+
+        galleryItems =
+            galleryItems.filterNot {       // filterNot   исключить по условию т.е. исключаем строки где url содержит пробелы
+                it.url.isBlank()  // isBlank() возвращает true для строки, содержащей только пробелы
+            }
+        Log.i(TAG, "GalleryItem $galleryItems")
+        return galleryItems
+    }
+
+    @WorkerThread  //указывает что функция выполняется в фоноыом потоке
+    fun fetchPhoto(url: String): Bitmap? {
+        val response: Response<ResponseBody> = flickrApi.fetchUrlBytes(url).execute()
+        val bitmap = response.body()?.byteStream()?.use(BitmapFactory::decodeStream)
+        /*Объект java.io.InputStream извлекается из тела ответа с помощью функции
+         * ResponseBody.byteStream(). Получив поток байтов, мы передаем его функции
+         * BitmapFactory.decodeStream(InputStream), которая создаст Bitmap из данных в потоке
+         * Ответный и байтовый потоки должны быть закрытыми. Так как InputStream реализует атрибут Closeable, то стандартная функция библиотеки Kotlin use(...)
+         * выполнит чистку при возвращении BitmapFactory.decodeStream(...)*/
+
+        Log.i(TAG, "Decoded bitmap=$bitmap from Response=$response")
+        return bitmap
+    }
+}
+
+//класс без поиска
+/*class FlickrFetchr {
+
+    private val flickrApi: FlickrApi
+
+    init {
         val retrofit: Retrofit = Retrofit.Builder()
             .baseUrl("https://api.flickr.com/")
             .addConverterFactory(GsonConverterFactory.create()) //меняем конвертер
             .build()
         flickrApi = retrofit.create(FlickrApi::class.java)
-
     }
 
     suspend fun getFlickrApi(page: Int): List<GalleryItem> {
@@ -117,11 +174,11 @@ class FlickrFetchr {
     fun fetchPhoto(url: String): Bitmap? {
         val response: Response<ResponseBody> = flickrApi.fetchUrlBytes(url).execute()
         val bitmap = response.body()?.byteStream()?.use(BitmapFactory::decodeStream)
-        /*Объект java.io.InputStream извлекается из тела ответа с помощью функции
-          ResponseBody.byteStream(). Получив поток байтов, мы передаем его функции
-          BitmapFactory.decodeStream(InputStream), которая создаст Bitmap из данных в потоке
-          Ответный и байтовый потоки должны быть закрытыми. Так как InputStream реализует атрибут Closeable, то стандартная функция библиотеки Kotlin use(...)
-          выполнит чистку при возвращении BitmapFactory.decodeStream(...)*/
+        /* Объект java.io.InputStream извлекается из тела ответа с помощью функции
+          * ResponseBody.byteStream(). Получив поток байтов, мы передаем его функции
+          * BitmapFactory.decodeStream(InputStream), которая создаст Bitmap из данных в потоке
+          * Ответный и байтовый потоки должны быть закрытыми. Так как InputStream реализует атрибут Closeable, то стандартная функция библиотеки Kotlin use(...)
+          * выполнит чистку при возвращении BitmapFactory.decodeStream(...)*/
 
         Log.i(TAG, "Decoded bitmap=$bitmap from Response=$response")
         return bitmap
@@ -174,7 +231,10 @@ class FlickrFetchrDeserializer {
         })
         return responseLiveData
     }
-}
+}*/
+
+
+
 
 
 /* класс для работы со скаларс конвертером
@@ -206,5 +266,23 @@ class FlickrFetchr {
             }
         })
         return responseLiveData
+    }
+}*/
+
+//класс для работ с Gson версия 2 с Deserializer
+/*class FlickrFetchrDeserializer {
+
+    private val flickrApi: FlickrApi
+
+    init {
+
+        val gSon = GsonBuilder().registerTypeAdapter(PhotoResponse::class.java, PhotoDeserializer())
+            .create()  //+
+
+        val retrofit: Retrofit = Retrofit.Builder()
+            .baseUrl("https://api.flickr.com/")
+            .addConverterFactory(GsonConverterFactory.create(gSon)) //меняем конвертер  //+
+            .build()
+        flickrApi = retrofit.create(FlickrApi::class.java)
     }
 }*/

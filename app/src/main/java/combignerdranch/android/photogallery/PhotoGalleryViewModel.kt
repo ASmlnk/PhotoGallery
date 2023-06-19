@@ -1,14 +1,33 @@
 package combignerdranch.android.photogallery
 
-import android.util.Log
 import androidx.lifecycle.*
-import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
-import androidx.lifecycle.viewmodel.CreationExtras
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import java.security.Provider
+
 
 class PhotoGalleryViewModel(private val photoGalleryPageRepository: PhotoGalleryPageRepository) :
+    ViewModel() {
+
+    val galleryItemLiveData: LiveData<PagingData<GalleryItem>>
+
+    private val mutableSearchTerm = MutableLiveData<String>()
+
+    init {
+         mutableSearchTerm.value = ""
+        galleryItemLiveData = mutableSearchTerm.switchMap { searchTerm ->
+            photoGalleryPageRepository.getAllGalleryItems(searchTerm).cachedIn(viewModelScope)
+        }
+    }
+
+    fun fetchPhotos(query: String = "") {
+        mutableSearchTerm.value = query
+    }
+}
+
+/*версия без поиска
+* class PhotoGalleryViewModel(private val photoGalleryPageRepository: PhotoGalleryPageRepository) :
     ViewModel() {
 
     // val galleryItemLiveData: LiveData<List<GalleryItem>>
@@ -26,4 +45,4 @@ class PhotoGalleryViewModel(private val photoGalleryPageRepository: PhotoGallery
         // galleryItemPageLiveData.value = responce.value
         //return responce
     }
-}
+}*/

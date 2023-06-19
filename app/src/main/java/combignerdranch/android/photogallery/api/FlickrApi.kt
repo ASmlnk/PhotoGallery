@@ -10,6 +10,31 @@ import retrofit2.http.Url
 
 interface FlickrApi {
 
+    @GET("services/rest/?method=flickr.interestingness.getList")
+    suspend fun fetchPhotosPage(
+        @Query("page") page: Int
+    ): Response<FlickrResponse>
+
+    @GET
+    fun fetchUrlBytes(@Url url: String): Call<ResponseBody>
+
+    @GET("services/rest/?method=flickr.photos.search")
+    fun searchPhotos(
+        @Query("text") query: String,
+        @Query("page") page: Int
+    ): Call<FlickrResponse>
+    /* Аннотация @Query позволяет динамически добавлять к URL параметры запроса.
+    * В данном случае мы добавляем параметр запроса text. Значение, присваиваемое
+    * параметру, зависит от аргумента, переданного в searchPhotos(String). Например,
+    * вызов searchPhotos("robot") добавит в URL приписку text=robot*/
+}
+
+
+
+
+/* до 26 главы без поиска
+ interface FlickrApi {
+
     @GET(
         "services/rest/?method=flickr.interestingness.getList" +
                 "&api_key=e6dbf158a5322e590962f3653190009a" +   //код ролученый на сайте
@@ -46,3 +71,4 @@ interface FlickrApi {
     @GET
     fun fetchUrlBytes(@Url url: String): Call<ResponseBody>
 }
+* */

@@ -2,7 +2,6 @@ package combignerdranch.android.photogallery
 
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -32,7 +31,6 @@ class PhotoGalleryPagerAdapter(val thumbnailDownloader: ThumbnailDownloader<Phot
     }
 
     /*class PhotoHolder(itemTextView: TextView): RecyclerView.ViewHolder(itemTextView) {
-
         val bindTitle: (CharSequence) -> Unit = itemTextView::setText
     }*/
 
@@ -47,9 +45,9 @@ class PhotoGalleryPagerAdapter(val thumbnailDownloader: ThumbnailDownloader<Phot
         holder.bindDrawable(placeholder)
 
         thumbnailDownloader.queueThumbnail(holder, galleryItem.url)
-        /*вызываем queueThumbnail() потока и передаем целевую папку PhotoHolder,
-        где в конечном итоге будет размещено изображение и
-        URL-адрес GalleryItem для скачивания*/
+        /* вызываем queueThumbnail() потока и передаем целевую папку PhotoHolder,
+        * где в конечном итоге будет размещено изображение и
+        * URL-адрес GalleryItem для скачивания*/
 
         // holder.bindTitle(galleryItem.title)
     }

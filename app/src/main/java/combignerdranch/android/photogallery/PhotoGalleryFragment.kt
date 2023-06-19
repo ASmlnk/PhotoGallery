@@ -5,17 +5,11 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Handler
-import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.view.ViewTreeObserver
+import android.view.*
 import android.widget.ImageView
-import android.widget.TextView
+import android.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
@@ -43,19 +37,20 @@ class PhotoGalleryFragment : Fragment() {
         super.onCreate(savedInstanceState)
 
         retainInstance = true //сохранение фрагмента
+        setHasOptionsMenu(true)
 
         val responseHandler = Handler() //Handler основного потока
         thumbnailDownloader = ThumbnailDownloader(responseHandler) {photoHolder, bitmap ->
             val drawable = BitmapDrawable(resources, bitmap)
             photoHolder.bindDrawable(drawable)
-            /*функция, переданная в функцию высшего порядка onThumbnailDownloaded ,
-            устанавливает Drawable запрошенного PhotoHolder на только что загруженный Bitmap*/
+            /* функция, переданная в функцию высшего порядка onThumbnailDownloaded ,
+            * устанавливает Drawable запрошенного PhotoHolder на только что загруженный Bitmap*/
         }
 
-        /*наблюдение за жизненым циклом фрагмента*/
+        /* наблюдение за жизненым циклом фрагмента*/
         lifecycle.addObserver(thumbnailDownloader.fragmentLifecycleObserver)
 
-        /*наблюдение за жизненым циклом представления 2 вариант*/
+        /* наблюдение за жизненым циклом представления 2 вариант*/
        // viewLifecycleOwnerLiveData.isInitialized
 
 
@@ -71,8 +66,8 @@ class PhotoGalleryFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
 
-        /*наблюдение за жизненым циклом представления 1 вариант*/
-        /*viewLifecycleOwner.lifecycle.addObserver(
+        /* наблюдение за жизненым циклом представления 1 вариант*/
+        /* viewLifecycleOwner.lifecycle.addObserver(
             thumbnailDownloader.viewLifecycleObserver
         )*/
 
@@ -91,13 +86,13 @@ class PhotoGalleryFragment : Fragment() {
         val adapter = PhotoGalleryPagerAdapter(thumbnailDownloader)
         photoRecyclerView.adapter = adapter
 
-        /*наблюдение за жизненым циклом представления 2 вариант*/
+        /* наблюдение за жизненым циклом представления 2 вариант*/
         viewLifecycleOwnerLiveData.value?.lifecycle?.addObserver(
             thumbnailDownloader.viewLifecycleObserver
         )
 
         viewLifecycleOwner.lifecycleScope.launch {
-            photoGalleryViewModel.getMovieList()
+            photoGalleryViewModel.galleryItemLiveData
                 .observe(viewLifecycleOwner) { pagingData ->
                     pagingData?.let {
                         adapter.submitData(lifecycle, it)
@@ -126,7 +121,7 @@ class PhotoGalleryFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
 
-        /*наблюдение за жизненым циклом представления*/
+        /* наблюдение за жизненым циклом представления*/
         viewLifecycleOwner.lifecycle.removeObserver(
             thumbnailDownloader.viewLifecycleObserver
         )
@@ -134,15 +129,36 @@ class PhotoGalleryFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-        /*наблюдение за жизненым циклом фрагмента*/
+        /* наблюдение за жизненым циклом фрагмента*/
         lifecycle.removeObserver(thumbnailDownloader.fragmentLifecycleObserver)
     }
 
-    /*Вызов lifecycle.addObserver(thumbnailDownloader) подписывает экземпляр загрузчика
-    эскизов на получение обратных вызовов жизненного цикла фрагмента. Теперь при вызове
-     функции PhotoGalleryFragment. onCreate(...) вызывается функция
-     ThumbnailDownloader.setup(). При вызове функции PhotoGalleryFragment.onDestroy()
-     вызывается функция ThumbnailDownloader.tearDown()*/
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+
+        inflater.inflate(R.menu.fragment_photo_gallery, menu)
+
+        val searchItem: MenuItem = menu.findItem(R.id.menu_item_search)
+        val searchView = searchItem.actionView as SearchView
+
+        searchView.apply {
+            setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(p0: String): Boolean {
+                    photoGalleryViewModel.fetchPhotos(p0)
+                    return true
+                }
+                override fun onQueryTextChange(p0: String?): Boolean {
+                    return false
+                }
+            })
+        }
+    }
+
+    /* Вызов lifecycle.addObserver(thumbnailDownloader) подписывает экземпляр загрузчика
+     * эскизов на получение обратных вызовов жизненного цикла фрагмента. Теперь при вызове
+     * функции PhotoGalleryFragment. onCreate(...) вызывается функция
+     * ThumbnailDownloader.setup(). При вызове функции PhotoGalleryFragment.onDestroy()
+     * вызывается функция ThumbnailDownloader.tearDown()*/
 
     private class PhotoHolder(private val itemImageView: ImageView) :
         RecyclerView.ViewHolder(itemImageView) {
@@ -178,7 +194,6 @@ class PhotoGalleryFragment : Fragment() {
             //thumbnailDownloader.queueThumbnail(holder, galleryItem.url)
             /*holder.bindTitle(galleryItem.title)*/
         }
-
         override fun getItemCount(): Int = galleryIem.size
     }
 
