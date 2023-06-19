@@ -15,13 +15,14 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.launch
+import okhttp3.internal.notify
 
 private const val TAG = "PhotoGalleryFragment"
 
 class PhotoGalleryFragment : Fragment() {
 
     private lateinit var photoRecyclerView: RecyclerView
-    private val flickrFetchr = FlickrFetchr()
+    val flickrFetchr = FlickrFetchr()
     private val photoGalleryPageRepository = PhotoGalleryPageRepository(flickrFetchr)
     private lateinit var thumbnailDownloader
             : ThumbnailDownloader<PhotoGalleryPagerAdapter.PhotoHolder>

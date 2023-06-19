@@ -18,6 +18,7 @@ private const val TAG = "MY"
 //класс для работ с Gson версия 1
 class FlickrFetchr {
 
+
     private val flickrApi: FlickrApi
 
     init {
@@ -25,7 +26,7 @@ class FlickrFetchr {
             .addInterceptor(PhotoInterceptor())
             .build()  //инициализация перехвадчика
 
-        Log.i(TAG, "$client")
+        Log.i(TAG, "sssssss$client")
 
         val retrofit: Retrofit = Retrofit.Builder()
             .baseUrl("https://api.flickr.com/")

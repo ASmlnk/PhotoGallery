@@ -12,6 +12,7 @@ class PhotoGalleryViewModel(private val photoGalleryPageRepository: PhotoGallery
 
     val galleryItemLiveData: LiveData<PagingData<GalleryItem>>
 
+
     private val mutableSearchTerm = MutableLiveData<String>()
 
     init {

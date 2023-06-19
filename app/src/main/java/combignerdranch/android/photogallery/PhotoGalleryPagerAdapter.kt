@@ -39,7 +39,7 @@ class PhotoGalleryPagerAdapter(val thumbnailDownloader: ThumbnailDownloader<Phot
 
         val placeholder: Drawable = ContextCompat.getDrawable(
             holder.itemView.context,
-            R.drawable.bill_up_close
+            R.drawable.ic_launcher_background
         ) ?: ColorDrawable()
 
         holder.bindDrawable(placeholder)
