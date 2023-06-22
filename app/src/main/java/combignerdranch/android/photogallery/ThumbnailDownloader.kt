@@ -44,7 +44,7 @@ class ThumbnailDownloader<in T>(
     * идентификатором является PhotoHolder , так что по ответу на запрос можно легко вернуться к элементу пользовательского интерфейса,
     * в котором должно находиться загруженное изображение.)*/
 
-    private val flickrFetchr = FlickrFetchr()  //
+    private val flickrFetchr = PhotoGalleryFragment.newInstance().flickrFetchr  //
 
     private val maxMemory = (Runtime.getRuntime().maxMemory() / 1024).toInt()
     private val cacheSize = maxMemory/8
@@ -131,8 +131,6 @@ class ThumbnailDownloader<in T>(
                 requestMap.clear()
             }
         }
-
-
     /*
     *1вариант наблюдателя за жизненым циклом фрагмента
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
@@ -182,8 +180,4 @@ class ThumbnailDownloader<in T>(
         }
         return bit
     }
-
-
-
-
 }
