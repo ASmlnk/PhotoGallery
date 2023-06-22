@@ -1,5 +1,7 @@
 package combignerdranch.android.photogallery
 
+import android.app.Application
+import android.app.ProgressDialog
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
@@ -20,6 +22,9 @@ private const val TAG = "PhotoGalleryFragment"
 
 class PhotoGalleryFragment : Fragment() {
 
+    private lateinit var progressDialog: ProgressDialog //для отображения индикатора загрузки (с неопределенным состоянием)
+
+    // сразу же после отправки запроса и до завершения загрузки данных JSON
     private lateinit var photoRecyclerView: RecyclerView
     private val flickrFetchr = FlickrFetchr()
     private val photoGalleryPageRepository = PhotoGalleryPageRepository(flickrFetchr)
@@ -29,18 +34,27 @@ class PhotoGalleryFragment : Fragment() {
     private val photoGalleryViewModel: PhotoGalleryViewModel by lazy {
         ViewModelProvider(
             this,
-            ViewModelFactory(photoGalleryPageRepository)
+            ViewModelFactory(
+                photoGalleryPageRepository,
+                application = requireActivity().application
+            )
         )[PhotoGalleryViewModel::class.java]
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        retainInstance = true //сохранение фрагмента
+        progressDialog = ProgressDialog(requireContext()).apply {
+            setTitle("Downloading photos")
+            setMessage("It might take a few seconds.. ")
+            setProgressStyle(ProgressDialog.STYLE_SPINNER)
+        }  //далее в searchView
+
+        //  retainInstance = true //сохранение фрагмента
         setHasOptionsMenu(true)
 
         val responseHandler = Handler() //Handler основного потока
-        thumbnailDownloader = ThumbnailDownloader(responseHandler) {photoHolder, bitmap ->
+        thumbnailDownloader = ThumbnailDownloader(responseHandler) { photoHolder, bitmap ->
             val drawable = BitmapDrawable(resources, bitmap)
             photoHolder.bindDrawable(drawable)
             /* функция, переданная в функцию высшего порядка onThumbnailDownloaded ,
@@ -51,7 +65,7 @@ class PhotoGalleryFragment : Fragment() {
         lifecycle.addObserver(thumbnailDownloader.fragmentLifecycleObserver)
 
         /* наблюдение за жизненым циклом представления 2 вариант*/
-       // viewLifecycleOwnerLiveData.isInitialized
+        // viewLifecycleOwnerLiveData.isInitialized
 
 
 /*        val flickrLiveData: LiveData<List<GalleryItem>> = FlickrFetchr().fetchPhotos()
@@ -95,6 +109,7 @@ class PhotoGalleryFragment : Fragment() {
             photoGalleryViewModel.galleryItemLiveData
                 .observe(viewLifecycleOwner) { pagingData ->
                     pagingData?.let {
+                        progressDialog.dismiss()  //скрытие диологового окна после загрузки содержимого
                         adapter.submitData(lifecycle, it)
                     }
                 }
@@ -144,13 +159,38 @@ class PhotoGalleryFragment : Fragment() {
         searchView.apply {
             setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(p0: String): Boolean {
+                    progressDialog.show()  //делаем диологовое окно видимым
                     photoGalleryViewModel.fetchPhotos(p0)
+                    clearFocus() //скрытие клавиатуры
                     return true
                 }
+
                 override fun onQueryTextChange(p0: String?): Boolean {
                     return false
                 }
             })
+            setOnFocusChangeListener { view, hasFocus ->
+                if (!hasFocus) {
+                    searchItem.collapseActionView()
+                }  //прослушиваю изменение фокуса, чтобы свернуть searchview
+            }
+            setOnSearchClickListener {
+                searchView.setQuery(
+                    photoGalleryViewModel.searchTerm, false
+                )
+            }
+        }
+    }
+
+    //очистите сохраненный запрос (установите его равным ""),
+    // когда пользователь выберет элемент «Clear Search» в меню
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.menu_item_clear -> {
+                photoGalleryViewModel.fetchPhotos("")
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
@@ -194,6 +234,7 @@ class PhotoGalleryFragment : Fragment() {
             //thumbnailDownloader.queueThumbnail(holder, galleryItem.url)
             /*holder.bindTitle(galleryItem.title)*/
         }
+
         override fun getItemCount(): Int = galleryIem.size
     }
 
