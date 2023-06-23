@@ -16,6 +16,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.work.OneTimeWorkRequest
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import kotlinx.coroutines.launch
 import okhttp3.internal.notify
 
@@ -73,6 +76,16 @@ class PhotoGalleryFragment : Fragment() {
         flickrLiveData.observe(this) { galleryItems ->
             Log.d(TAG, "Response received: $galleryItems ")
         }*/
+
+        //создаем рабочий запрос
+        val workRequest = OneTimeWorkRequest //В OneTimeWorkRequest используется конструктор для создания экземпляра
+            .Builder(PollWorker::class.java) //передаем класс Worker конструктору, который
+            .build()                         //будет запущен в рабочем запросе
+       /* Как только ваш рабочий запрос будет готов, вам нужно запланировать его с помощью класса WorkManager.
+       * Мы вызываем функцию getInstance() для доступа к WorkManager, затем функцию enqueue(...) с рабочим запросом
+       * в качестве параметра*/
+        WorkManager.getInstance()
+            .enqueue(workRequest)
     }
 
     override fun onCreateView(
