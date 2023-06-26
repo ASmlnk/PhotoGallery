@@ -38,12 +38,24 @@ class FlickrFetchr {
         Log.i(TAG, "$flickrApi")
     }
 
-    suspend fun getFlickrApi(page: Int): List<GalleryItem>{
-        return getFlickrApiRequest(flickrApi.fetchPhotosPage(page))
+    /*для запросов в PollWorker*/
+    fun fetchPhotosRequest(page: Int): Call<FlickrResponse> {
+        return flickrApi.fetchPhotosPage(page)
     }
 
-     suspend fun searchPhotos( query: String,page: Int): List<GalleryItem> {
-         val responseFlickrResponse = flickrApi.searchPhotos(query, page).awaitResponse()
+    suspend fun getFlickrApi(page: Int): List<GalleryItem>{
+        val responseFlickrResponse = fetchPhotosRequest(page).awaitResponse()
+        return getFlickrApiRequest(responseFlickrResponse)
+    }
+
+    /*для запросов в PollWorker*/
+    fun searchPhotosRequest(query: String, page: Int): Call<FlickrResponse> {
+        return flickrApi.searchPhotos(query, page)
+    }
+
+
+    suspend fun searchPhotos( query: String, page: Int): List<GalleryItem> {
+         val responseFlickrResponse = searchPhotosRequest(query, page).awaitResponse()
         return getFlickrApiRequest(responseFlickrResponse)
     }
 

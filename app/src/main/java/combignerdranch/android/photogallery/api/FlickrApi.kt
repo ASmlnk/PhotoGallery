@@ -11,9 +11,9 @@ import retrofit2.http.Url
 interface FlickrApi {
 
     @GET("services/rest/?method=flickr.interestingness.getList")
-    suspend fun fetchPhotosPage(
+    fun fetchPhotosPage(
         @Query("page") page: Int
-    ): Response<FlickrResponse>
+    ): Call<FlickrResponse>
 
     @GET
     fun fetchUrlBytes(@Url url: String): Call<ResponseBody>

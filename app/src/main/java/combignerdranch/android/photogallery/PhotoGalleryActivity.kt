@@ -1,5 +1,7 @@
 package combignerdranch.android.photogallery
 
+import android.content.Context
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 
@@ -14,6 +16,17 @@ class PhotoGalleryActivity : AppCompatActivity() {
                 .beginTransaction()
                 .add(R.id.fragmentContainer, PhotoGalleryFragment.newInstance())
                 .commit()
+        }
+    }
+
+    companion object {
+
+        /* функция вернет экземпляр Intent, который может быть использован для
+        * запуска PhotoGalleryActivity. (В конце концов, PollWorker будет вызывать
+        * функцию PhotoGalleryActivity.newIntent(...), обертывать полученный интент
+        * в PendingIntent и устанавливать уведомление.)*/
+        fun newIntent(context: Context): Intent {
+            return Intent(context, PhotoGalleryActivity::class.java)
         }
     }
 }

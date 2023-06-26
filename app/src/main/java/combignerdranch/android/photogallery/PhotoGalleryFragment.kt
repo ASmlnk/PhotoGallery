@@ -19,8 +19,10 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.work.*
 import kotlinx.coroutines.launch
 import okhttp3.internal.notify
+import java.util.concurrent.TimeUnit
 
 private const val TAG = "PhotoGalleryFragment"
+private const val POLL_WORK = "POLL_WORK"
 
 class PhotoGalleryFragment : Fragment() {
 
@@ -75,20 +77,23 @@ class PhotoGalleryFragment : Fragment() {
             Log.d(TAG, "Response received: $galleryItems ")
         }*/
 
-        //конструируем условие запроса
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.UNMETERED)  //указываем тип сети
-            .build()
-        //создаем рабочий запрос
-        val workRequest = OneTimeWorkRequest //В OneTimeWorkRequest используется конструктор для создания экземпляра
-            .Builder(PollWorker::class.java) //передаем класс Worker конструктору, который будет запущен в рабочем запросе
-            .setConstraints(constraints)  //добавляем условие запроса
-            .build()
-       /* Как только ваш рабочий запрос будет готов, вам нужно запланировать его с помощью класса WorkManager.
-       * Мы вызываем функцию getInstance() для доступа к WorkManager, затем функцию enqueue(...) с рабочим запросом
-       * в качестве параметра*/
+
+        /*убираем в конце главы 27*/
+        /* //конструируем условие запроса
+            val constraints = Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.UNMETERED)  //указываем тип сети
+                .build()
+            //создаем рабочий запрос
+            val workRequest =
+                OneTimeWorkRequest //В OneTimeWorkRequest используется конструктор для создания экземпляра
+                    .Builder(PollWorker::class.java) //передаем класс Worker конструктору, который будет запущен в рабочем запросе
+                    .setConstraints(constraints)  //добавляем условие запроса
+                    .build()
+            *//* Как только ваш рабочий запрос будет готов, вам нужно запланировать его с помощью класса WorkManager.
+        * Мы вызываем функцию getInstance() для доступа к WorkManager, затем функцию enqueue(...) с рабочим запросом
+        * в качестве параметра*//*
         WorkManager.getInstance()
-            .enqueue(workRequest)
+            .enqueue(workRequest)*/
     }
 
     override fun onCreateView(
@@ -197,16 +202,68 @@ class PhotoGalleryFragment : Fragment() {
                 )
             }
         }
+
+        val toggleItem = menu.findItem(R.id.menu_item_toggle_polling)
+        val isPolling = QueryPreferences.isPolling(requireContext())
+
+        /*по умолчанию для этого элемента является строка start_polling. изменим
+         этот текст, если работник уже запущен*/
+        val toggleItemTitle = if (isPolling) {
+            R.string.stop_polling
+        } else {
+            R.string.start_polling
+        }
+        toggleItem.setTitle(toggleItemTitle)
     }
 
     //очистите сохраненный запрос (установите его равным ""),
     // когда пользователь выберет элемент «Clear Search» в меню
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
+
             R.id.menu_item_clear -> {
                 photoGalleryViewModel.fetchPhotos("")
                 true
             }
+
+            /* реакция на щелчки переключателя опросов. Если работник не запущен, создаем новый
+            * PeriodicWorkRequest и запланируйте его с помощью WorkManager. Если работник
+            * запущен, его нужно остановить*/
+            R.id.menu_item_toggle_polling -> {
+                val isPolling = QueryPreferences.isPolling(requireContext())
+                if (isPolling) {
+                    /* Если работник уже запущен, то вам необходимо сообщить WorkManager об отмене запроса на работу.
+                    * В этом случае для удаления периодического запроса на работу вызывается функция cancelUniqueWork(...)
+                    * с именем POLL_WORK*/
+                    WorkManager.getInstance().cancelUniqueWork(POLL_WORK)
+                    QueryPreferences.setPolling(requireContext(), false)
+                } else {
+                    /* сли работник в данный момент не запущен, то
+                    * мы назначим новый запрос на работу с WorkManager*/
+                    val constraints = Constraints.Builder()
+                        .setRequiredNetworkType(NetworkType.UNMETERED)
+                        .build()
+                    /* PeriodicWorkRequest заставляет нашего
+                    * работника самого запланировать себя через некоторый интервал(15 минут)*/
+                    val periodicRequest = PeriodicWorkRequest
+                        .Builder(PollWorker::class.java, 15, TimeUnit.MINUTES)
+                        .setConstraints(constraints)
+                        .build()
+                    /* enqueueUniquePeriodicWork(...) принимает имя типа String, политику и рабочий запрос.
+                    * Имя позволяет однозначно идентифицировать запрос, что полезно, если вы захотите его отменить*/
+                    WorkManager.getInstance().enqueueUniquePeriodicWork(
+                        POLL_WORK,
+                        ExistingPeriodicWorkPolicy.KEEP,
+                        periodicRequest
+                    )
+                    /* политика KEEP, которая отказывается от нового запроса в пользу уже существующего.
+Другая              * опция — REPLACE, которая, как следует из названия, заменяет существующий запрос на новый*/
+                    QueryPreferences.setPolling(requireContext(), true)
+                }
+                activity?.invalidateOptionsMenu()
+                return true
+            }
+
             else -> super.onOptionsItemSelected(item)
         }
     }
