@@ -1,14 +1,15 @@
 package combignerdranch.android.photogallery
 
 import android.annotation.SuppressLint
+import android.app.Notification
 import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.Worker
 import androidx.work.WorkerParameters
-
 
 private const val TAG = "PollWorker"
 
@@ -74,13 +75,43 @@ class PollWorker(val context: Context, workerParams: WorkerParameters) :
             * канала уведомления, если пользователь запустил приложение на Oreo или выше.
             * Если у пользователя запущена более ранняя версия Android, NotificationCompat.Builder игнорирует канал*/
 
-            val notificationManager = NotificationManagerCompat.from(context) //мэнеджер запуска уведомления
+           //убираем код т.к. настроили упорядоченый широковещательный интент
+        /* val notificationManager = NotificationManagerCompat.from(context) //мэнеджер запуска уведомления
             notificationManager.notify(0, notification) //для размещения уведомления
-            /* Целый параметр, который вы передаете в функцию notify(...), является идентификатором вашего уведомления.
+            *//* Целый параметр, который вы передаете в функцию notify(...), является идентификатором вашего уведомления.
              * Он должен быть уникальным во всем вашем приложении, но может быть использован повторно. Одно уведомление заменит
-             * другое тем же самым идентификатором, который все еще находится в ящике уведомлений*/
+             * другое тем же самым идентификатором, который все еще находится в ящике уведомлений*//*
+
+            *//*запуск трансляции (широковещательный интент)*//*
+            context.sendBroadcast(Intent(ACTION_SHOW_NOTIFICATION), PREM_PRIVATE)*/
+
+            /*для упорядочивания щироковещательного интента*/
+            showBackgroundNotification(0, notification)
+
         }
 
         return Result.success()
+    }
+
+    /*для упорядочивания щироковещательного интента*/
+    private fun showBackgroundNotification(requestCode: Int, notification: Notification) {
+        val intent = Intent(ACTION_SHOW_NOTIFICATION).apply {
+            putExtra(REQUEST_CODE, requestCode)
+            putExtra(NOTIFICATION, notification)
+        }
+
+        context.sendOrderedBroadcast(intent, PREM_PRIVATE)
+        /* context.sendOrderedBroadcast(Intent, String?) ведет себя очень похоже на функцию sendBroadcast(...),
+         * но при этом гарантирует, что трансляция будет доставлена приемнику вовремя.
+         * Код результата устанавливается равным Activity.RESULT_OK, когда эта трансляция будет отправлена*/
+    }
+
+    companion object {
+        /*широковещательный интент*/
+      const val  ACTION_SHOW_NOTIFICATION =
+          "combignerdranch.android.photogallery.SHOW_NOTIFICATION"
+        const val PREM_PRIVATE = "combignerdranch.android.photogallery.PRIVATE"
+        const val REQUEST_CODE = "REQUEST_CODE"
+        const val NOTIFICATION = "NOTIFICATION"
     }
 }

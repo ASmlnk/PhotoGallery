@@ -1,6 +1,5 @@
 package combignerdranch.android.photogallery
 
-import android.app.Application
 import android.app.ProgressDialog
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
@@ -11,20 +10,19 @@ import android.view.*
 import android.widget.ImageView
 import android.widget.SearchView
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.work.*
 import kotlinx.coroutines.launch
-import okhttp3.internal.notify
 import java.util.concurrent.TimeUnit
 
 private const val TAG = "PhotoGalleryFragment"
 private const val POLL_WORK = "POLL_WORK"
 
-class PhotoGalleryFragment : Fragment() {
+/*class PhotoGalleryFragment : Fragment() {*/
+class PhotoGalleryFragment : VisibleFragment() {
 
     private lateinit var progressDialog: ProgressDialog //для отображения индикатора загрузки (с неопределенным состоянием)
 
