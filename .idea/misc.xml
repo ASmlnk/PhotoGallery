@@ -4,7 +4,9 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Users/user/AndroidStudioProjects/PhotoGallery/app/src/main/res/layout/activity_photo_gallery.xml" value="0.11666666666666667" />
+        <entry key="..\:/Users/user/AndroidStudioProjects/PhotoGallery/app/src/main/res/layout/activity_photo_page.xml" value="0.11481481481481481" />
         <entry key="..\:/Users/user/AndroidStudioProjects/PhotoGallery/app/src/main/res/layout/fragment_photo_gallery.xml" value="0.11666666666666667" />
+        <entry key="..\:/Users/user/AndroidStudioProjects/PhotoGallery/app/src/main/res/layout/fragment_photo_page.xml" value="0.2" />
         <entry key="..\:/Users/user/AndroidStudioProjects/PhotoGallery/app/src/main/res/layout/list_item_gallery.xml" value="0.1519756838905775" />
         <entry key="..\:/Users/user/AndroidStudioProjects/PhotoGallery/app/src/main/res/menu/fragment_photo_gallery.xml" value="0.1648148148148148" />
       </map>

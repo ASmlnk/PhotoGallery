@@ -255,7 +255,7 @@ class PhotoGalleryFragment : VisibleFragment() {
                         periodicRequest
                     )
                     /* политика KEEP, которая отказывается от нового запроса в пользу уже существующего.
-Другая              * опция — REPLACE, которая, как следует из названия, заменяет существующий запрос на новый*/
+                     * опция — REPLACE, которая, как следует из названия, заменяет существующий запрос на новый*/
                     QueryPreferences.setPolling(requireContext(), true)
                 }
                 activity?.invalidateOptionsMenu()

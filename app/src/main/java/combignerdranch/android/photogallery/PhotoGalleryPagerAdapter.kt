@@ -1,14 +1,18 @@
 package combignerdranch.android.photogallery
 
+import android.content.Intent
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+
 private const val TAG = "pos"
 
 class PhotoGalleryPagerAdapter(val thumbnailDownloader: ThumbnailDownloader<PhotoHolder>)
@@ -26,8 +30,29 @@ class PhotoGalleryPagerAdapter(val thumbnailDownloader: ThumbnailDownloader<Phot
     }
 
     class PhotoHolder(private val itemImageView: ImageView) :
-        RecyclerView.ViewHolder(itemImageView) {
+        RecyclerView.ViewHolder(itemImageView), View.OnClickListener {
+
+        private lateinit var galleryItem: GalleryItem
+
+        init {
+            itemView.setOnClickListener(this)
+        }
+
         val bindDrawable: (Drawable) -> Unit = itemImageView::setImageDrawable
+
+        fun bindGalleryItem(item: GalleryItem) {
+            galleryItem = item
+        }
+
+        override fun onClick(view: View) {
+            /*неявный интент для запуска браузера, для открытия страницы картинки
+            val intent = Intent(Intent.ACTION_VIEW, galleryItem.photoPageUri)*/
+
+            /*создадим явный интент для открытия картинки в WebView*/
+            val intent = PhotoPageActivity
+                .newIntent(itemView.context, galleryItem.photoPageUri)
+            itemView.context.startActivity(intent) //Fragment.startActivity(Intent)
+        }
     }
 
     /*class PhotoHolder(itemTextView: TextView): RecyclerView.ViewHolder(itemTextView) {
@@ -36,6 +61,8 @@ class PhotoGalleryPagerAdapter(val thumbnailDownloader: ThumbnailDownloader<Phot
 
     override fun onBindViewHolder(holder: PhotoHolder, position: Int) {
         val galleryItem = getItem(position)!!
+
+        holder.bindGalleryItem(galleryItem)
 
         val placeholder: Drawable = ContextCompat.getDrawable(
             holder.itemView.context,
